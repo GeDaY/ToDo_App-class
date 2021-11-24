@@ -1,0 +1,65 @@
+@import '_reset.scss';
+@import '_variables.scss';
+@import '_mixin.scss';
+@import '_fonts.scss';
+
+body {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  padding: 2rem;
+  background-color: rgb(177, 211, 170);
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+//  ========================================
+//  header styles start
+//  ========================================
+
+//  header styles end
+
+// ========================================
+// main styles start
+// ========================================
+
+.todo {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 0.5rem;
+
+  .todo__item {
+    padding: 1rem;
+
+    .todo__title {
+      font-size: 25px;
+    }
+
+    .form-control:focus {
+      border-color: #27af70;
+      outline: 0;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075),
+        0 0 8px rgba(102, 175, 233, 0.6);
+    }
+  }
+
+  ul {
+    li:is(.checked) {
+      order: 1;
+    }
+  }
+}
+
+.form-check-input:checked + .form-check-label {
+  text-decoration: line-through 3px blue;
+}
+
+// main styles end
+
+// ========================================
+// footer styles start
+// ========================================
+
+// footer styles end
