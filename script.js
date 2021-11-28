@@ -1,11 +1,10 @@
 let data = []
-// let editedTodo = {}
-// let isEdit = false
 
 const formElem = document.querySelector('#form')
 const listElem = document.querySelector('#list')
 
 // -----------------------------------------------------------------
+
 class ToDoFormCreate {
   constructor(formElement) {
     this.formElement = formElement
@@ -40,6 +39,7 @@ class ToDoFormCreate {
 }
 
 // -----------------------------------------------------------------
+
 class ToDoList {
   constructor(listElem) {
     this.listElem = listElem
@@ -48,10 +48,13 @@ class ToDoList {
 
   #init() {
     this.handleChange = this.#handleChange.bind(this)
+    this.handleclickDelBtn = this.#handleclickDelBtn.bind(this)
     this.handleRenderNeed = this.#handleRenderNeed.bind(this)
 
-    window.addEventListener('render:need', this.handleRenderNeed)
     this.listElem.addEventListener('change', this.handleChange)
+    this.listElem.addEventListener('click', this.handleclickDelBtn)
+    window.addEventListener('render:need', this.handleRenderNeed)
+    window.addEventListener('render:needEditListElem', this.handleRenderNeed)
   }
 
   #handleChange(event) {
@@ -67,6 +70,16 @@ class ToDoList {
     })
 
     this.render()
+  }
+
+  #handleclickDelBtn(event) {
+    const { role, id } = event.target.dataset
+
+    if (role == 'delete') {
+      data = data.filter((item) => item.id != id)
+
+      this.render()
+    }
   }
 
   #handleRenderNeed() {
@@ -115,8 +128,112 @@ class ToDoList {
 
 // -----------------------------------------------------------------------
 
+class ToDoListEdit {
+  editedTodo = {}
+  isEdit = false
+
+  constructor(listElem) {
+    this.listElem = listElem
+    this.#init()
+  }
+
+  #init() {
+    this.handleClickEditBtn = this.#handleClickEditBtn.bind(this)
+    this.handleTodoEditSubm = this.#handleTodoEditSubm.bind(this)
+    this.handleClickCancelBtn = this.#handleClickCancelBtn.bind(this)
+
+    this.listElem.addEventListener('click', this.handleClickEditBtn)
+    this.listElem.addEventListener('submit', this.handleTodoEditSubm)
+    this.listElem.addEventListener('click', this.handleClickCancelBtn)
+  }
+
+  #handleClickEditBtn(event) {
+    const { target } = event
+    const { role, id } = target.dataset
+
+    if (role == 'edit') {
+      if (this.isEdit == true) {
+        alert('finish editing')
+        return
+      }
+
+      data.forEach((item) => {
+        if (item.id == id) {
+          this.editedTodo = item
+
+          const { parentElement } = target
+          const editTodo = this.template(item)
+
+          parentElement.outerHTML = editTodo
+
+          this.isEdit = true
+        }
+      })
+    }
+  }
+
+  #handleTodoEditSubm(event) {
+    event.preventDefault()
+
+    const { target } = event
+    const { role } = target.dataset
+
+    if (role == 'todoEdit') {
+      const editedContent = target.querySelector('[name="content"]').value
+
+      this.editedTodo.todo_content = editedContent
+
+      this.renderEditListElem()
+
+      this.isEdit = false
+    }
+  }
+
+  #handleClickCancelBtn(event) {
+    const { role } = event.target.dataset
+    if (role == 'cancelEdit') {
+      this.renderEditListElem()
+
+      this.isEdit = false
+    }
+  }
+
+  template({ todo_content }) {
+    const template = `
+  <form class="d-flex p-2 border border-1 rounded-3" data-role="todoEdit">
+
+    <div class="flex-grow-1 me-3">
+      <input type="text" class="form-control form-control-sm" placeholder="edit a task" name="content" required value="${todo_content}">
+    </div>
+
+    <button type="submit" class="btn btn-sm btn-success">
+      <svg class="pe-none" width="16" height="16">
+        <use href="#confirm" />
+      </svg>
+    </button>
+
+    <button type="button" data-role="cancelEdit" class="btn btn-sm btn-warning ms-2">
+      <svg class="pe-none" width="16" height="16">
+        <use href="#cancel" />
+      </svg>
+    </button>
+
+  </form>
+`
+    return template
+  }
+
+  renderEditListElem() {
+    const eventRenderEditlistElem = new Event('render:needEditListElem')
+    window.dispatchEvent(eventRenderEditlistElem)
+  }
+}
+
+// --------------------------------------------------------------------------------
+
 new ToDoFormCreate(formElem)
 new ToDoList(listElem)
+new ToDoListEdit(listElem)
 
 // function handleBeforeUnload() {
 //   const json = JSON.stringify(data)
@@ -133,97 +250,7 @@ new ToDoList(listElem)
 //   }
 // }
 
-// function handleclickDelBtn(event) {
-//   const { role, id } = event.target.dataset
-
-//   if (role == 'delete') {
-//     data = data.filter((item) => item.id != id)
-
-//     render()
-//   }
-// }
-
-// function handleClickEditBtn(event) {
-//   const { target } = event
-//   const { role, id } = target.dataset
-
-//   if (role == 'edit') {
-//     if (isEdit == true) {
-//       alert('finish editing')
-//       return
-//     }
-
-//     data.forEach((item) => {
-//       if (item.id == id) {
-//         editedTodo = item
-
-//         const { parentElement } = target
-//         const editTodo = editTodoTemplate(item)
-
-//         parentElement.outerHTML = editTodo
-
-//         isEdit = true
-//       }
-//     })
-//   }
-// }
-
-// function handleClickCancelBtn(event) {
-//   const { role } = event.target.dataset
-//   if (role == 'cancelEdit') {
-//     render()
-
-//     isEdit = false
-//   }
-// }
-
-// function handleTodoEditSubm(event) {
-//   event.preventDefault()
-
-//   const { target } = event
-//   const { role } = target.dataset
-
-//   if (role == 'todoEdit') {
-//     const editedContent = target.querySelector('[name="content"]').value
-
-//     editedTodo.todo_content = editedContent
-
-//     render()
-
-//     isEdit = false
-//   }
-// }
-
 //  -----------------------------------------------------------------------------
 
-// function editTodoTemplate({ todo_content }) {
-//   const template = `
-//   <form class="d-flex p-2 border border-1 rounded-3" data-role="todoEdit">
-
-//     <div class="flex-grow-1 me-3">
-//       <input type="text" class="form-control form-control-sm" placeholder="edit a task" name="content" required value="${todo_content}">
-//     </div>
-
-//     <button type="submit" class="btn btn-sm btn-success">
-//       <svg class="pe-none" width="16" height="16">
-//         <use href="#confirm" />
-//       </svg>
-//     </button>
-
-//     <button type="button" data-role="cancelEdit" class="btn btn-sm btn-warning ms-2">
-//       <svg class="pe-none" width="16" height="16">
-//         <use href="#cancel" />
-//       </svg>
-//     </button>
-
-//   </form>
-// `
-//   return template
-// }
-
-// listElem.addEventListener('submit', handleTodoEditSubm)
-// listElem.addEventListener('click', handleclickDelBtn)
-// listElem.addEventListener('click', handleClickEditBtn)
-// listElem.addEventListener('click', handleClickCancelBtn)
 // window.addEventListener('beforeunload', handleBeforeUnload)
 // window.addEventListener('DOMContentLoaded', handleAfterReload)
