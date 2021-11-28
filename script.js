@@ -13,8 +13,12 @@ class ToDoFormCreate {
 
   #init() {
     this.handleSubmit = this.#handleSubmit.bind(this)
+    this.handleBeforeUnload = this.#handleBeforeUnload.bind(this)
+    this.handleAfterReload = this.#handleAfterReload.bind(this)
 
     this.formElement.addEventListener('submit', this.handleSubmit)
+    window.addEventListener('beforeunload', this.handleBeforeUnload)
+    window.addEventListener('DOMContentLoaded', this.handleAfterReload)
   }
 
   #handleSubmit(event) {
@@ -36,6 +40,22 @@ class ToDoFormCreate {
     const eventRender = new Event('render:need')
     window.dispatchEvent(eventRender)
   }
+
+  #handleBeforeUnload() {
+    const json = JSON.stringify(data)
+    localStorage.setItem('data', json)
+  }
+
+  #handleAfterReload() {
+    const dataStorage = localStorage.getItem('data')
+
+    if (dataStorage) {
+      data = JSON.parse(dataStorage)
+
+      const eventRenderAfterReload = new Event('render:needAfterReload')
+      window.dispatchEvent(eventRenderAfterReload)
+    }
+  }
 }
 
 // -----------------------------------------------------------------
@@ -55,6 +75,7 @@ class ToDoList {
     this.listElem.addEventListener('click', this.handleclickDelBtn)
     window.addEventListener('render:need', this.handleRenderNeed)
     window.addEventListener('render:needEditListElem', this.handleRenderNeed)
+    window.addEventListener('render:needAfterReload', this.handleRenderNeed)
   }
 
   #handleChange(event) {
@@ -234,23 +255,3 @@ class ToDoListEdit {
 new ToDoFormCreate(formElem)
 new ToDoList(listElem)
 new ToDoListEdit(listElem)
-
-// function handleBeforeUnload() {
-//   const json = JSON.stringify(data)
-//   localStorage.setItem('data', json)
-// }
-
-// function handleAfterReload() {
-//   const dataStorage = localStorage.getItem('data')
-
-//   if (dataStorage) {
-//     data = JSON.parse(dataStorage)
-
-//     render()
-//   }
-// }
-
-//  -----------------------------------------------------------------------------
-
-// window.addEventListener('beforeunload', handleBeforeUnload)
-// window.addEventListener('DOMContentLoaded', handleAfterReload)
