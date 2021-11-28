@@ -3,13 +3,9 @@ let data = []
 // let isEdit = false
 
 const formElem = document.querySelector('#form')
-// const listElem = document.querySelector('#list')
+const listElem = document.querySelector('#list')
 
-function render() {
-  // const todoElements = createTodoElements()
-  // listElem.innerHTML = todoElements
-}
-
+// -----------------------------------------------------------------
 class ToDoFormCreate {
   constructor(formElement) {
     this.formElement = formElement
@@ -38,28 +34,89 @@ class ToDoFormCreate {
     data.push(todo)
     formElem.reset()
 
-    console.log(data)
-
-    render()
+    const eventRender = new Event('render:need')
+    window.dispatchEvent(eventRender)
   }
 }
 
+// -----------------------------------------------------------------
+class ToDoList {
+  constructor(listElem) {
+    this.listElem = listElem
+    this.#init()
+  }
+
+  #init() {
+    this.handleChange = this.#handleChange.bind(this)
+    this.handleRenderNeed = this.#handleRenderNeed.bind(this)
+
+    window.addEventListener('render:need', this.handleRenderNeed)
+    this.listElem.addEventListener('change', this.handleChange)
+  }
+
+  #handleChange(event) {
+    const { target } = event
+    const { id, checked, type } = target
+
+    if (type != 'checkbox') return
+
+    data.forEach((item) => {
+      if (item.id == id) {
+        item.isChecked = checked
+      }
+    })
+
+    this.render()
+  }
+
+  #handleRenderNeed() {
+    this.render()
+  }
+
+  template({ id, todo_content, isChecked }) {
+    const checkedAttr = isChecked ? 'checked' : ''
+
+    const template = `
+      <li class="d-flex p-2 border border-1 rounded-3 ${checkedAttr}">
+    
+        <div class="form-check form-check-lg d-flex flex-grow-1 align-items-center">
+          <input class="form-check-input mt-0 me-2" ${checkedAttr} type="checkbox" id="${id}">
+          <label class="form-check-label" for="${id}">${todo_content}</label>
+        </div>
+    
+        <button type="button" data-role="edit" data-id="${id}" class="btn btn-sm btn-primary me-2">
+          <svg class="pe-none" width="16" height="16"><use href="#pencil"/></svg>
+        </button>
+    
+        <button type="button" data-role="delete" data-id="${id}" class="btn btn-sm btn-danger ms-auto">
+          <svg class="pe-none" width="16" height="16"><use href="#trash"/></svg>
+        </button>
+    
+      </li>
+    `
+    return template
+  }
+
+  toDoElements() {
+    let result = ''
+
+    data.forEach((todo) => {
+      result = result + this.template(todo)
+    })
+
+    return result
+  }
+
+  render() {
+    const todoElements = this.toDoElements()
+    this.listElem.innerHTML = todoElements
+  }
+}
+
+// -----------------------------------------------------------------------
+
 new ToDoFormCreate(formElem)
-
-// function handleChange(event) {
-//   const { target } = event
-//   const { id, checked, type } = target
-
-//   if (type != 'checkbox') return
-
-//   data.forEach((item) => {
-//     if (item.id == id) {
-//       item.isChecked = checked
-//     }
-//   })
-
-//   render()
-// }
+new ToDoList(listElem)
 
 // function handleBeforeUnload() {
 //   const json = JSON.stringify(data)
@@ -139,29 +196,6 @@ new ToDoFormCreate(formElem)
 
 //  -----------------------------------------------------------------------------
 
-// function createTodoTemplate({ id, todo_content, isChecked }) {
-//   const checkedAttr = isChecked ? 'checked' : ''
-//   const template = `
-//   <li class="d-flex p-2 border border-1 rounded-3 ${checkedAttr}">
-
-//     <div class="form-check form-check-lg d-flex flex-grow-1 align-items-center">
-//       <input class="form-check-input mt-0 me-2" ${checkedAttr} type="checkbox" id="${id}">
-//       <label class="form-check-label" for="${id}">${todo_content}</label>
-//     </div>
-
-//     <button type="button" data-role="edit" data-id="${id}" class="btn btn-sm btn-primary me-2">
-//       <svg class="pe-none" width="16" height="16"><use href="#pencil"/></svg>
-//     </button>
-
-//     <button type="button" data-role="delete" data-id="${id}" class="btn btn-sm btn-danger ms-auto">
-//       <svg class="pe-none" width="16" height="16"><use href="#trash"/></svg>
-//     </button>
-
-//   </li>
-// `
-//   return template
-// }
-
 // function editTodoTemplate({ todo_content }) {
 //   const template = `
 //   <form class="d-flex p-2 border border-1 rounded-3" data-role="todoEdit">
@@ -187,18 +221,7 @@ new ToDoFormCreate(formElem)
 //   return template
 // }
 
-// function createTodoElements() {
-//   let result = ''
-
-//   data.forEach((todo) => {
-//     result = result + createTodoTemplate(todo)
-//   })
-
-//   return result
-// }
-
 // listElem.addEventListener('submit', handleTodoEditSubm)
-// listElem.addEventListener('change', handleChange)
 // listElem.addEventListener('click', handleclickDelBtn)
 // listElem.addEventListener('click', handleClickEditBtn)
 // listElem.addEventListener('click', handleClickCancelBtn)
