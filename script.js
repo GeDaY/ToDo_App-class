@@ -4,6 +4,37 @@ const formElem = document.querySelector('#form')
 const listElem = document.querySelector('#list')
 
 // -----------------------------------------------------------------
+class ToDoSaver {
+  constructor() {
+    this.#init()
+  }
+
+  #init() {
+    this.handleBeforeUnload = this.#handleBeforeUnload.bind(this)
+    this.handleAfterReload = this.#handleAfterReload.bind(this)
+
+    window.addEventListener('beforeunload', this.handleBeforeUnload)
+    window.addEventListener('DOMContentLoaded', this.handleAfterReload)
+  }
+
+  #handleBeforeUnload() {
+    const json = JSON.stringify(data)
+    localStorage.setItem('data', json)
+  }
+
+  #handleAfterReload() {
+    const dataStorage = localStorage.getItem('data')
+
+    if (dataStorage) {
+      data = JSON.parse(dataStorage)
+
+      const eventRenderAfterReload = new Event('render:needAfterReload')
+      window.dispatchEvent(eventRenderAfterReload)
+    }
+  }
+}
+
+// -----------------------------------------------------------------
 
 class ToDoFormCreate {
   constructor(formElement) {
@@ -13,12 +44,8 @@ class ToDoFormCreate {
 
   #init() {
     this.handleSubmit = this.#handleSubmit.bind(this)
-    this.handleBeforeUnload = this.#handleBeforeUnload.bind(this)
-    this.handleAfterReload = this.#handleAfterReload.bind(this)
 
     this.formElement.addEventListener('submit', this.handleSubmit)
-    window.addEventListener('beforeunload', this.handleBeforeUnload)
-    window.addEventListener('DOMContentLoaded', this.handleAfterReload)
   }
 
   #handleSubmit(event) {
@@ -39,22 +66,6 @@ class ToDoFormCreate {
 
     const eventRender = new Event('render:need')
     window.dispatchEvent(eventRender)
-  }
-
-  #handleBeforeUnload() {
-    const json = JSON.stringify(data)
-    localStorage.setItem('data', json)
-  }
-
-  #handleAfterReload() {
-    const dataStorage = localStorage.getItem('data')
-
-    if (dataStorage) {
-      data = JSON.parse(dataStorage)
-
-      const eventRenderAfterReload = new Event('render:needAfterReload')
-      window.dispatchEvent(eventRenderAfterReload)
-    }
   }
 }
 
@@ -255,3 +266,4 @@ class ToDoListEdit {
 new ToDoFormCreate(formElem)
 new ToDoList(listElem)
 new ToDoListEdit(listElem)
+new ToDoSaver()
