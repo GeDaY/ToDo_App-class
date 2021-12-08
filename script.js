@@ -1,4 +1,5 @@
 let data = []
+isEdit = false
 
 const formElem = document.querySelector('#form')
 const listElem = document.querySelector('#list')
@@ -66,6 +67,8 @@ class ToDoFormCreate {
 
     const eventRender = new Event('render:need')
     window.dispatchEvent(eventRender)
+
+    isEdit = false
   }
 }
 
@@ -162,7 +165,6 @@ class ToDoList {
 
 class ToDoListEdit {
   editedTodo = {}
-  isEdit = false
 
   constructor(listElem) {
     this.listElem = listElem
@@ -184,7 +186,7 @@ class ToDoListEdit {
     const { role, id } = target.dataset
 
     if (role == 'edit') {
-      if (this.isEdit == true) {
+      if (isEdit == true) {
         alert('finish editing')
         return
       }
@@ -198,7 +200,7 @@ class ToDoListEdit {
 
           parentElement.outerHTML = editTodo
 
-          this.isEdit = true
+          isEdit = true
         }
       })
     }
@@ -217,7 +219,7 @@ class ToDoListEdit {
 
       this.renderEditListElem()
 
-      this.isEdit = false
+      isEdit = false
     }
   }
 
@@ -226,7 +228,7 @@ class ToDoListEdit {
     if (role == 'cancelEdit') {
       this.renderEditListElem()
 
-      this.isEdit = false
+      isEdit = false
     }
   }
 
